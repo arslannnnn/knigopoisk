@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static book_extras %}
 
 {% block title %}Каталог книг - KnigoPoisk{% endblock %}
 
@@ -91,6 +91,25 @@
                     <h6 class="card-subtitle mb-2 text-muted">
                         <i class="bi bi-person"></i> {{ book.author.name }}
                     </h6>
+                    <div class="mb-2 d-flex align-items-center">
+                        <div class="star-rating me-2" aria-label="Средний рейтинг {{ book.avg_rating|default:0|floatformat:1 }} из 10">
+                            <div class="star-back">
+                                {% for i in "1234567890" %}
+                                    <i class="bi bi-star"></i>
+                                {% endfor %}
+                            </div>
+                            <div class="star-front" style="width: {{ book.avg_rating|star_width }}%;">
+                                {% for i in "1234567890" %}
+                                    <i class="bi bi-star-fill"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% if book.avg_rating %}
+                            <span class="ms-2 small text-muted">{{ book.avg_rating|floatformat:1 }}</span>
+                        {% else %}
+                            <span class="ms-2 small text-muted">Нет оценок</span>
+                        {% endif %}
+                    </div>
 
                     <p class="card-text text-muted small mb-2">
                         <i class="bi bi-tags"></i>

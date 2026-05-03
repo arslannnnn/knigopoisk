@@ -21,10 +21,15 @@ class Book(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     genres = models.ManyToManyField(Genre)
     description = models.TextField()
+    preview_text = models.TextField(blank=True, null=True)
     price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
 
     def __str__(self):
         return self.title
+
+    def average_rating(self):
+        average = self.reviews.aggregate(models.Avg('rating'))['rating__avg']
+        return round(average, 1) if average else 0
 
 
 class Cart(models.Model):
@@ -59,19 +64,27 @@ class Wishlist(models.Model):
         return f"Wishlist of {self.user.username}"
 
 
+class ReadStatus(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='read_statuses')
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='read_statuses')
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ['user', 'book']
+        verbose_name = 'Статус прочтения'
+        verbose_name_plural = 'Статусы прочтения'
+
+    def __str__(self):
+        return f"{self.book.title} — {'Прочитано' if self.is_read else 'Не прочитано'} для {self.user.username}"
+
+
 class Review(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
 
-    RATING_CHOICES = [
-        (1, '★☆☆☆☆ - Плохо'),
-        (2, '★★☆☆☆ - Неплохо'),
-        (3, '★★★☆☆ - Нормально'),
-        (4, '★★★★☆ - Хорошо'),
-        (5, '★★★★★ - Отлично'),
-    ]
+    RATING_CHOICES = [(i, '★' * i + '☆' * (10 - i)) for i in range(1, 11)]
 
-    rating = models.PositiveSmallIntegerField(choices=RATING_CHOICES, default=5)
+    rating = models.PositiveSmallIntegerField(choices=RATING_CHOICES, default=10)
     comment = models.TextField(max_length=1000, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -84,4 +97,4 @@ class Review(models.Model):
         return f"Отзыв от {self.user.username} на {self.book.title}"
 
     def get_star_rating(self):
-        return '★' * self.rating + '☆' * (5 - self.rating)
+        return '★' * self.rating + '☆' * (10 - self.rating)

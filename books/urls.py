@@ -16,6 +16,10 @@ urlpatterns = [
     path('<int:book_id>/remove-from-wishlist/', views.remove_from_wishlist, name='remove_from_wishlist'),
     path('wishlist/', views.view_wishlist, name='view_wishlist'),
 
+    # Статус прочтения
+    path('<int:book_id>/toggle-read/', views.toggle_read_status, name='toggle_read_status'),
+
     # Отзывы
     path('review/<int:review_id>/delete/', views.delete_review, name='delete_review'),
 ]
+

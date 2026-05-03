@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Avg
-from .models import Book, Cart, CartItem, Wishlist, Genre, Review
+from .models import Book, Cart, CartItem, Wishlist, Genre, Review, ReadStatus
 from .forms import ReviewForm
 
 
@@ -13,6 +13,7 @@ def book_list(request):
     else:
         books = Book.objects.all()
 
+    books = books.annotate(avg_rating=Avg('reviews__rating'))
     all_genres = Genre.objects.all()
 
     return render(request, 'books/book_list.html', {
@@ -27,12 +28,23 @@ def book_detail(request, book_id):
     reviews = book.reviews.all().order_by('-created_at')
 
     avg_rating = book.reviews.aggregate(Avg('rating'))['rating__avg']
-    avg_rating = round(avg_rating, 1) if avg_rating else 0
+    if avg_rating:
+        avg_rating = round(avg_rating, 1)
+        avg_rating_percent = int(avg_rating * 10)
+    else:
+        avg_rating = 0
+        avg_rating_percent = 0
     review_count = reviews.count()
 
     user_review = None
+    in_wishlist = False
+    read_status = None
     if request.user.is_authenticated:
         user_review = Review.objects.filter(book=book, user=request.user).first()
+        wishlist = Wishlist.objects.filter(user=request.user).first()
+        if wishlist:
+            in_wishlist = book in wishlist.books.all()
+        read_status = ReadStatus.objects.filter(book=book, user=request.user).first()
 
     if request.method == 'POST' and request.user.is_authenticated:
         form = ReviewForm(request.POST)
@@ -60,9 +72,12 @@ def book_detail(request, book_id):
         'book': book,
         'reviews': reviews,
         'avg_rating': avg_rating,
+        'avg_rating_percent': avg_rating_percent,
         'review_count': review_count,
         'form': form,
-        'user_review': user_review
+        'user_review': user_review,
+        'in_wishlist': in_wishlist,
+        'read_status': read_status,
     })
 
 
@@ -140,6 +155,20 @@ def view_wishlist(request):
     return render(request, 'books/wishlist.html', {
         'wishlist': wishlist
     })
+
+
+@login_required
+def toggle_read_status(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    if request.method == 'POST':
+        status, _ = ReadStatus.objects.get_or_create(user=request.user, book=book)
+        status.is_read = not status.is_read
+        status.save()
+        messages.success(
+            request,
+            f"Книга \"{book.title}\" помечена как {'прочитано' if status.is_read else 'не прочитано'}"
+        )
+    return redirect('book_detail', book_id=book_id)
 
 
 @login_required

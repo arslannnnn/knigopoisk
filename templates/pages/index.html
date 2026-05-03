@@ -21,7 +21,7 @@
                             <i class="bi bi-book"></i> Смотреть каталог
                         </a>
                         {% if not user.is_authenticated %}
-                        <a href="{% url 'admin:login' %}" class="btn btn-outline-primary btn-lg">
+                        <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">
                             <i class="bi bi-box-arrow-in-right"></i> Войти в аккаунт
                         </a>
                         {% endif %}

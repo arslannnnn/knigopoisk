@@ -28,6 +28,28 @@
             font-size: 0.8em;
             margin-right: 3px;
         }
+        .star-rating {
+            display: inline-block;
+            position: relative;
+            line-height: 1;
+        }
+        .star-rating .star-back,
+        .star-rating .star-front {
+            display: flex;
+        }
+        .star-rating .star-front {
+            position: absolute;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .star-rating .star-front i {
+            color: #ffc107;
+        }
+        .star-rating .star-back i {
+            color: #ced4da;
+        }
     </style>
 </head>
 <body>
@@ -78,19 +100,29 @@
                             {{ user.username }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'profile' %}">
+                                <i class="bi bi-person me-2"></i>Профиль
+                            </a></li>
+                            {% if user.is_staff %}
                             <li><a class="dropdown-item" href="{% url 'admin:index' %}">
                                 <i class="bi bi-gear me-2"></i>Админка
                             </a></li>
+                            {% endif %}
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'admin:logout' %}">
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">
                                 <i class="bi bi-box-arrow-right me-2"></i>Выйти
                             </a></li>
                         </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="btn btn-outline-light" href="{% url 'admin:login' %}">
+                        <a class="btn btn-outline-light me-2" href="{% url 'login' %}">
                             <i class="bi bi-box-arrow-in-right me-1"></i>Войти
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-light" href="{% url 'register' %}">
+                            <i class="bi bi-person-plus me-1"></i>Регистрация
                         </a>
                     </li>
                     {% endif %}
@@ -138,7 +170,7 @@
             </div>
             <hr>
             <div class="text-center text-muted">
-                <p>&copy; 2025 KnigoPoisk. Все права защищены.</p>
+                <p>&copy; 2026 KnigoPoisk. Все права защищены.</p>
             </div>
         </div>
     </footer>
@@ -149,3 +181,4 @@
     {% block extra_js %}{% endblock %}
 </body>
 </html>
+

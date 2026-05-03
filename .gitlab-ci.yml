@@ -1,0 +1,31 @@
+image: python:3.11
+
+services:
+  - postgres:15
+
+variables:
+  POSTGRES_DB: knigopoisk
+  POSTGRES_USER: user
+  POSTGRES_PASSWORD: password
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: 5432
+  DJANGO_SETTINGS_MODULE: knigopoisk_project.settings
+
+stages:
+  - build
+  - test
+
+before_script:
+  - pip install --upgrade pip
+  - pip install -r requirements.txt
+
+build:
+  stage: build
+  script:
+    - docker build -t knigopoisk_app .
+
+test:
+  stage: test
+  script:
+    - python manage.py migrate
+    - python manage.py test
