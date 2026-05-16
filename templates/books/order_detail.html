@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Заказ #{{ order.id }} - KnigoPoisk{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">Заказ #{{ order.id }}</h3>
+                    <span class="badge bg-info text-dark fs-6">{{ order.get_status_display }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        Заказ оформлен {{ order.created_at|date:"d.m.Y H:i" }}. Статус учебной доставки: {{ order.get_status_display|lower }}.
+                    </div>
+
+                    <h5>Доставка</h5>
+                    <p class="mb-1"><strong>Получатель:</strong> {{ order.full_name }}</p>
+                    <p class="mb-1"><strong>Телефон:</strong> {{ order.phone }}</p>
+                    <p class="mb-3"><strong>Адрес:</strong> {{ order.address }}</p>
+                    {% if order.comment %}
+                        <p class="mb-3"><strong>Комментарий:</strong> {{ order.comment }}</p>
+                    {% endif %}
+
+                    <h5 class="mt-4">Книги</h5>
+                    <div class="list-group mb-4">
+                        {% for item in order.items.all %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ item.book.title }}</strong>
+                                    <div class="small text-muted">{{ item.book.author.name }} · {{ item.quantity }} шт.</div>
+                                </div>
+                                <strong>{{ item.total_price }} ₽</strong>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                        <span class="h5 mb-0">Итого</span>
+                        <span class="h4 text-success mb-0">{{ order.total_price }} ₽</span>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{% url 'profile' %}" class="btn btn-primary">В профиль</a>
+                        <a href="{% url 'book_list' %}" class="btn btn-outline-secondary">В каталог</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -23,6 +23,9 @@ class Book(models.Model):
     description = models.TextField()
     preview_text = models.TextField(blank=True, null=True)
     price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    has_ebook = models.BooleanField(default=False)
+    ebook_price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    ebook_file = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return self.title
@@ -62,6 +65,64 @@ class Wishlist(models.Model):
 
     def __str__(self):
         return f"Wishlist of {self.user.username}"
+
+
+class UserBalance(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='balance')
+    amount = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+
+    def __str__(self):
+        return f"Balance of {self.user.username}: {self.amount}"
+
+
+class EbookPurchase(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ebook_purchases')
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='ebook_purchases')
+    purchased_at = models.DateTimeField(auto_now_add=True)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+
+    class Meta:
+        unique_together = ['user', 'book']
+        ordering = ['-purchased_at']
+
+    def __str__(self):
+        return f"{self.user.username} bought ebook {self.book.title}"
+
+
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ('processing', 'Оформлен'),
+        ('in_transit', 'В пути'),
+        ('delivered', 'Доставлен'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
+    full_name = models.CharField(max_length=200)
+    phone = models.CharField(max_length=30)
+    address = models.TextField()
+    comment = models.TextField(blank=True)
+    total_price = models.DecimalField(max_digits=8, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='in_transit')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Order #{self.id} for {self.user.username}"
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+
+    def total_price(self):
+        return self.quantity * self.price
+
+    def __str__(self):
+        return f"{self.quantity}x {self.book.title}"
 
 
 class ReadStatus(models.Model):

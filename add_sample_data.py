@@ -1,5 +1,6 @@
 import os
 import django
+from decimal import Decimal
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'knigopoisk_project.settings')
 django.setup()
@@ -7,9 +8,33 @@ django.setup()
 from books.models import Author, Genre, Book
 from django.contrib.auth.models import User
 
-# Не заполняем повторно, если книги уже есть
+
+def ensure_chekhov_ebook():
+    author, _ = Author.objects.get_or_create(name="Антон Чехов")
+    classic, _ = Genre.objects.get_or_create(name="Классика")
+    story, _ = Genre.objects.get_or_create(name="Рассказ")
+    book, _ = Book.objects.get_or_create(
+        title="Дама с собачкой",
+        author=author,
+        defaults={
+            "description": "Короткий рассказ Антона Чехова о встрече Гурова и Анны Сергеевны в Ялте.",
+            "preview_text": "Говорили, что на набережной появилось новое лицо: дама с собачкой.",
+            "price": Decimal("149.00"),
+        }
+    )
+    book.description = "Короткий рассказ Антона Чехова о встрече Гурова и Анны Сергеевны в Ялте."
+    book.preview_text = "Говорили, что на набережной появилось новое лицо: дама с собачкой."
+    book.price = Decimal("149.00")
+    book.has_ebook = True
+    book.ebook_price = Decimal("99.00")
+    book.ebook_file = "books/ebook_texts/dama_s_sobachkoy.txt"
+    book.save()
+    book.genres.add(classic, story)
+    return book
+
 if Book.objects.exists():
     print("⚠️ Книги уже существуют, проверяем текст превью для существующих книг...")
+    ensure_chekhov_ebook()
     previews = {
         "Преступление и наказание": "Он лежал в своей маленькой комнате и думал о том, что в мире есть двое людей: один живет, другой почти уже мертв. Он читал строки и слышал, как все вокруг гудит, словно впереди уже нет ни одной дороги.",
         "1984": "В апреле 1984 года, когда часы пробили тринадцать, раздевалка застыла в мертвенной тишине. Везде висела одна только мысль: Большой Брат смотрит на тебя.",
@@ -33,30 +58,29 @@ if Book.objects.exists():
         print(f"✅ Обновлено preview_text для {updated} книг.")
     else:
         print("ℹ️ Все книги уже имеют preview_text.")
-    exit(0)
 
 # Создаем авторов
 authors = [
-    Author.objects.create(name="Фёдор Достоевский"),
-    Author.objects.create(name="Лев Толстой"),
-    Author.objects.create(name="Джордж Оруэлл"),
-    Author.objects.create(name="Рэй Брэдбери"),
-    Author.objects.create(name="Агата Кристи"),
-    Author.objects.create(name="Джоан Роулинг"),
-    Author.objects.create(name="Стивен Кинг"),
-    Author.objects.create(name="Антон Чехов"),
+    Author.objects.get_or_create(name="Фёдор Достоевский")[0],
+    Author.objects.get_or_create(name="Лев Толстой")[0],
+    Author.objects.get_or_create(name="Джордж Оруэлл")[0],
+    Author.objects.get_or_create(name="Рэй Брэдбери")[0],
+    Author.objects.get_or_create(name="Агата Кристи")[0],
+    Author.objects.get_or_create(name="Джоан Роулинг")[0],
+    Author.objects.get_or_create(name="Стивен Кинг")[0],
+    Author.objects.get_or_create(name="Антон Чехов")[0],
 ]
 
 # Создаем жанры
 genres = [
-    Genre.objects.create(name="Роман"),
-    Genre.objects.create(name="Фантастика"),
-    Genre.objects.create(name="Детектив"),
-    Genre.objects.create(name="Фэнтези"),
-    Genre.objects.create(name="Классика"),
-    Genre.objects.create(name="Ужасы"),
-    Genre.objects.create(name="Драма"),
-    Genre.objects.create(name="Антиутопия"),
+    Genre.objects.get_or_create(name="Роман")[0],
+    Genre.objects.get_or_create(name="Фантастика")[0],
+    Genre.objects.get_or_create(name="Детектив")[0],
+    Genre.objects.get_or_create(name="Фэнтези")[0],
+    Genre.objects.get_or_create(name="Классика")[0],
+    Genre.objects.get_or_create(name="Ужасы")[0],
+    Genre.objects.get_or_create(name="Драма")[0],
+    Genre.objects.get_or_create(name="Антиутопия")[0],
 ]
 
 # Создаем книги
@@ -144,15 +168,22 @@ books_data = [
 ]
 
 for data in books_data:
-    book = Book.objects.create(
+    book, created = Book.objects.get_or_create(
         title=data["title"],
         author=data["author"],
-        description=data["description"],
-        preview_text=data.get("preview_text", ""),
-        price=data["price"]
+        defaults={
+            "description": data["description"],
+            "preview_text": data.get("preview_text", ""),
+            "price": data["price"],
+        }
     )
+    book.description = data["description"]
+    book.preview_text = data.get("preview_text", "")
+    book.price = data["price"]
     book.genres.set(data["genres"])
     book.save()
+
+ensure_chekhov_ebook()
 
 print("=" * 50)
 print("✅ Создано успешно!")

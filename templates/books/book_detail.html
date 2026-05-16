@@ -180,6 +180,31 @@
                     </div>
                     <div class="d-grid gap-3">
                         {% if user.is_authenticated %}
+                            {% if book.has_ebook %}
+                            <div class="border rounded p-3 bg-light">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <strong><i class="bi bi-tablet"></i> Электронная версия</strong>
+                                    <span class="text-success fw-bold">{{ book.ebook_price }} ₽</span>
+                                </div>
+                                <p class="small text-muted mb-3">Баланс: {{ balance.amount }} ₽</p>
+                                {% if has_ebook_purchase %}
+                                    <a href="{% url 'read_ebook' book.id %}" class="btn btn-success w-100">
+                                        <i class="bi bi-book"></i> Читать онлайн
+                                    </a>
+                                {% else %}
+                                    <form action="{% url 'buy_ebook' book.id %}" method="post" class="mb-2">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-success w-100">
+                                            <i class="bi bi-bag-check"></i> Купить электронно
+                                        </button>
+                                    </form>
+                                    <a href="{% url 'top_up_balance' %}" class="btn btn-outline-success w-100">
+                                        <i class="bi bi-credit-card"></i> Пополнить баланс
+                                    </a>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
                             <!-- Добавить в корзину -->
                             <form action="{% url 'add_to_cart' book.id %}" method="post">
                                 {% csrf_token %}

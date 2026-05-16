@@ -10,6 +10,13 @@ urlpatterns = [
     path('cart/item/<int:cart_item_id>/remove/', views.remove_from_cart, name='remove_from_cart'),
     path('cart/item/<int:cart_item_id>/update/', views.update_cart_item, name='update_cart_item'),
     path('cart/', views.view_cart, name='view_cart'),
+    path('cart/checkout/', views.checkout_order, name='checkout_order'),
+    path('orders/<int:order_id>/', views.order_detail, name='order_detail'),
+
+    # Электронные книги и учебный баланс
+    path('balance/top-up/', views.top_up_balance, name='top_up_balance'),
+    path('<int:book_id>/buy-ebook/', views.buy_ebook, name='buy_ebook'),
+    path('<int:book_id>/read/', views.read_ebook, name='read_ebook'),
 
     # Список желаний
     path('<int:book_id>/add-to-wishlist/', views.add_to_wishlist, name='add_to_wishlist'),

@@ -88,6 +88,11 @@
                             <i class="bi bi-star me-1"></i>Список желаний
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'balance' in request.path %}active{% endif %}" href="{% url 'top_up_balance' %}">
+                            <i class="bi bi-wallet2 me-1"></i>Баланс
+                        </a>
+                    </li>
                     {% endif %}
                 </ul>
 

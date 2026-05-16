@@ -3,6 +3,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm, CustomAuthenticationForm
+from books.models import UserBalance, EbookPurchase, Order
 
 def register(request):
     if request.method == 'POST':
@@ -43,4 +44,11 @@ def user_logout(request):
 
 @login_required
 def profile(request):
-    return render(request, 'accounts/profile.html')
+    balance, _ = UserBalance.objects.get_or_create(user=request.user)
+    purchases = EbookPurchase.objects.filter(user=request.user).select_related('book', 'book__author')
+    orders = Order.objects.filter(user=request.user).prefetch_related('items__book')
+    return render(request, 'accounts/profile.html', {
+        'balance': balance,
+        'purchases': purchases,
+        'orders': orders,
+    })

@@ -13,6 +13,40 @@
                 <p><strong>Имя пользователя:</strong> {{ user.username }}</p>
                 <p><strong>Email:</strong> {{ user.email }}</p>
                 <p><strong>Дата регистрации:</strong> {{ user.date_joined|date:"d.m.Y" }}</p>
+                <div class="alert alert-success d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Баланс библиотеки:</strong> {{ balance.amount }} ₽
+                    </div>
+                    <a href="{% url 'top_up_balance' %}" class="btn btn-sm btn-success">
+                        <i class="bi bi-credit-card"></i> Пополнить
+                    </a>
+                </div>
+                <h5 class="mt-4">Мои электронные книги</h5>
+                {% if purchases %}
+                    <div class="list-group mb-4">
+                        {% for purchase in purchases %}
+                            <a href="{% url 'read_ebook' purchase.book.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <span>{{ purchase.book.title }} — {{ purchase.book.author.name }}</span>
+                                <span class="badge bg-success">Читать</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">Пока нет купленных электронных книг.</p>
+                {% endif %}
+                <h5 class="mt-4">Мои заказы бумажных книг</h5>
+                {% if orders %}
+                    <div class="list-group mb-4">
+                        {% for order in orders %}
+                            <a href="{% url 'order_detail' order.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <span>Заказ #{{ order.id }} от {{ order.created_at|date:"d.m.Y" }} — {{ order.total_price }} ₽</span>
+                                <span class="badge bg-info text-dark">{{ order.get_status_display }}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">Пока нет заказов бумажных книг.</p>
+                {% endif %}
                 <a href="{% url 'logout' %}" class="btn btn-danger">Выйти</a>
             </div>
         </div>
